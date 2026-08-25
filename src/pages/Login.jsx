@@ -22,7 +22,7 @@ function Login() {
     console.log(formData);
     setSubmitted(true);
     login();
-    navigate("/dashboard");
+    navigate("/dashboard", { state: { email: formData.email } });
   };
 
   return (

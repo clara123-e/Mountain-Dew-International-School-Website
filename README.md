@@ -49,3 +49,69 @@ Running the Project Locally
  Status
 
 This is a work in progress. The pages and layout are complete for this stage of the assignment, but there is no backend yet, so login, sign up, and the contact form do not actually save any data. That will be added in a future module as the project grows into a full stack application.
+
+Understanding How Components Change
+
+While building this project, three related React concepts came up a lot: how a component's state changes, how components mount and unmount, and what actually causes a component to re-render. Here is what I learned about each one, using real examples from this project.
+
+1. How a Component Changes State
+
+State is data that a component keeps track of and can change over time, like whether a password is currently visible, or what a user has typed into a form. In React, you do not change state directly. Instead, you call a special "setter" function that React gives you when you create the state with `useState`.
+
+Example from this project:** In `Login.jsx`, the password visibility toggle works like this:
+
+```jsx
+const [showPassword, setShowPassword] = useState(false);
+
+<button onClick={() => setShowPassword(!showPassword)}>
+  {showPassword ? "🙈" : "👁️"}
+</button>
+```
+
+Here, `showPassword` is the state, and `setShowPassword` is the only way to change it. Every time the button is clicked, `setShowPassword` flips the value from `true` to `false` or back, and React re-renders the component to reflect the new value.
+
+2. How a Component Mounts and Unmounts
+
+Mounting is when a component first appears on the screen. Unmounting is when it is removed from the screen completely, for example when the user navigates to a different page.
+
+Example from this project:** Every time a user visits `/dashboard`, the `Dashboard` component mounts. If the user then clicks a link to go to `/about`, the `Dashboard` component unmounts (it is completely removed from the page), and the `About` component mounts in its place.
+
+This matters because a component's state does not survive an unmount. If I had a counter inside `Dashboard` and the user navigated away and came back, the counter would reset to its starting value, since a brand new instance of the component mounts each time.
+
+### 3. What Triggers a Re-render
+
+A re-render is when React updates what is shown on the screen because something changed. A component re-renders when:
+
+- Its own state changes** (calling a setter function like `setShowPassword` above)
+- Props it receives change** (data passed in from a parent component)
+- Context it is subscribed to changes** (for example, when `isAuthenticated` changes in `AuthContext`, every component using `useAuth()` re-renders)
+- Its parent component re-renders** (children usually re-render when their parent does, unless optimized otherwise)
+
+Example from this project:** When a user logs in through `Login.jsx`, the `login()` function updates `isAuthenticated` inside `AuthContext`. Because `AuthLayout.jsx` reads `isAuthenticated` through `useAuth()`, it re-renders immediately, and the condition inside it now allows the `Dashboard` page to render instead of redirecting to `/login`.
+
+```jsx
+const { isAuthenticated } = useAuth();
+
+if (!isAuthenticated) {
+  return <Navigate to="/login" replace />;
+}
+```
+
+Passing Data Between Pages with useNavigate
+
+React Router's `useNavigate` hook can carry a small piece of data along when navigating to a new page, using a second argument called `state`.
+
+Example from this project:** After a user logs in, `Login.jsx` passes their email to the Dashboard like this:
+
+```jsx
+navigate("/dashboard", { state: { email: formData.email } });
+```
+
+The `Dashboard` page then reads that data back out using `useLocation`:
+
+```jsx
+const location = useLocation();
+const email = location.state?.email;
+```
+
+This lets the Dashboard greet the user by the email they just logged in with, without needing a backend or database to store that information yet.
