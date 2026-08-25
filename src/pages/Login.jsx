@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 function Login() {
   const [formData, setFormData] = useState({
@@ -8,15 +10,19 @@ function Login() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+    const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (field, value) => {
     setFormData({ ...formData, [field]: value });
   };
 
-  const handleSubmit = (e) => {
+    const handleSubmit = (e) => {
     e.preventDefault();
     console.log(formData);
     setSubmitted(true);
+    login();
+    navigate("/dashboard");
   };
 
   return (
